@@ -1,16 +1,29 @@
 "use strict";
+
+const field = document.querySelector(".game_field");
+const fieldRect = field.getBoundingClientRect();
+
 const startBtn = document.querySelector(".start_button");
 const pauseBtn = document.querySelector(".pause_button");
 const stopBtn = document.querySelector(".stop_button");
 const pauseAndstopBtn = document.querySelector(".pause_and_stop");
 const gameScore = document.querySelector(".game_score");
+const gameTimer = document.querySelector(".game_timer");
+const pauseIcon = document.querySelector(".fa-pause");
 
 const popUp = document.querySelector(".pop_up");
 const popUpMessage = document.querySelector(".pop_up_message");
 const popUpRefresh = document.querySelector(".pop_up_refresh");
 
-const gameTimer = document.querySelector(".game_timer");
-const icon = document.querySelector(".fa-pause");
+const imageSize = 60;
+const PUMPKIN_COUNT = 5;
+const SKULL_COUNT = 8;
+const FRANKENSTEIN_COUNT = 8;
+let score = 0;
+
+let started = false;
+let startTime = 5;
+let timer = undefined;
 
 // Game start
 startBtn.addEventListener("click", () => {
@@ -18,7 +31,7 @@ startBtn.addEventListener("click", () => {
 });
 
 function startGame() {
-  stoped = false;
+  started = false;
   initGame();
   showPauseAndStopBtn();
   showTimer();
@@ -34,27 +47,26 @@ function showPauseAndStopBtn() {
 
 // pause and restart button
 pauseBtn.addEventListener("click", () => {
-  if (stoped) {
+  if (started) {
     showPauseBtn();
-    stoped = false;
+    started = false;
     remainingTimeSec();
   } else {
     clearInterval(timer);
     showPlayBtn();
-    stoped = true;
+    started = true;
   }
-  console.log(stoped);
 });
 
 // show play button and pause button
 function showPlayBtn() {
-  icon.classList.remove("fa-pause");
-  icon.classList.add("fa-play");
+  pauseIcon.classList.remove("fa-pause");
+  pauseIcon.classList.add("fa-play");
 }
 
 function showPauseBtn() {
-  icon.classList.remove("fa-play");
-  icon.classList.add("fa-pause");
+  pauseIcon.classList.remove("fa-play");
+  pauseIcon.classList.add("fa-pause");
 }
 
 // game finish button
@@ -78,10 +90,11 @@ popUpRefresh.addEventListener("click", () => {
 });
 
 // finish game
-function finishGame() {
+function finishGame(lose) {
   pauseAndstopBtn.style.visibility = "hidden";
   showPopUp();
   clearInterval(timer);
+  showPopUpText(lose ? "YOU LOSE!" : "YOU WIN!");
 }
 
 // show timer
@@ -94,12 +107,8 @@ function showScore() {
   gameScore.style.visibility = "visible";
 }
 
-let stoped = true;
-let startTime = 5;
-let timer = undefined;
-
 function remainingTimeSec() {
-  if (!stoped) {
+  if (!started) {
     updateTimerText(startTime);
     timer = setInterval(() => {
       updateTimerText(--startTime);
@@ -107,7 +116,7 @@ function remainingTimeSec() {
         clearInterval(timer);
         // call finish game
         finishGame();
-        showPopUpText("REPLAY?");
+        showPopUpText("YOU LOSE!");
         return;
       }
     }, 1000);
@@ -135,14 +144,6 @@ function showPopUpText(text) {
   popUpMessage.innerText = text;
 }
 
-const field = document.querySelector(".game_field");
-const fieldRect = field.getBoundingClientRect();
-const imageSize = 60;
-const pumpkinCount = 5;
-const skullCount = 8;
-const frankensteinCount = 8;
-let score = 0;
-
 // random number
 function randomNumber(min, max) {
   return Math.random() * (max - min) + min;
@@ -158,7 +159,7 @@ function addItem(className, count, imgPath) {
     // 3. add image
     item.setAttribute("src", imgPath);
     item.style.position = "absolute";
-
+    item.style.cursor = "pointer";
     field.appendChild(item);
 
     // field x,y and random number
@@ -171,6 +172,14 @@ function addItem(className, count, imgPath) {
     // call random number
     item.style.left = `${x}px`;
     item.style.top = `${y}px`;
+
+    pauseBtn.addEventListener("click", () => {
+      if (started) {
+        item.style.visibility = "hidden";
+      } else {
+        item.style.visibility = "visible";
+      }
+    });
   }
 }
 
@@ -179,34 +188,33 @@ function initGame() {
   score = 0;
   field.innerHTML = "";
 
-  gameScore.innerText = pumpkinCount;
-  addItem("pumpkin", pumpkinCount, "img/pumpkin.png");
-  addItem("skull", skullCount, "img/skull.png");
-  addItem("frankenstein", frankensteinCount, "img/frankenstein.png");
+  gameScore.innerText = PUMPKIN_COUNT;
+  addItem("pumpkin", PUMPKIN_COUNT, "img/pumpkin.png");
+  addItem("skull", SKULL_COUNT, "img/skull.png");
+  addItem("frankenstein", FRANKENSTEIN_COUNT, "img/frankenstein.png");
 }
 
 // field click event
-field.addEventListener("click", (event) => {
-  // mouse target
-  const thisTarget = event.target;
-  // if ) target = pumpkin
-  if (thisTarget.classList.contains("pumpkin")) {
-    thisTarget.remove();
+field.addEventListener("click", onFieldClick);
+
+function onFieldClick(event) {
+  if (started) {
+    return;
+  }
+  const target = event.target;
+  if (target.matches(".pumpkin")) {
+    target.remove();
     score++;
     updateScoreText();
-    if (pumpkinCount === score) {
+    if (score === PUMPKIN_COUNT) {
       finishGame();
-      showPopUpText("YOU WIN");
     }
-  } else if (
-    thisTarget.classList.contains("skull") ||
-    thisTarget.classList.contains("frankenstein")
-  ) {
+  } else if (target.matches(".skull") || target.matches(".frankenstein")) {
     finishGame();
-    showPopUpText("REPLAY?");
+    showPopUpText("YOU LOSE!");
   }
-});
+}
 
 function updateScoreText() {
-  gameScore.innerText = pumpkinCount - score;
+  gameScore.innerText = PUMPKIN_COUNT - score;
 }

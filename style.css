@@ -1,5 +1,6 @@
 body {
   text-align: center;
+  background-color: black;
 }
 
 button {
@@ -15,6 +16,7 @@ button {
   display: flex;
   flex-direction: column;
   margin: auto;
+  margin-top: 70px;
 }
 
 .game_header {
@@ -97,4 +99,10 @@ button {
 .pop_up_message {
   display: block;
   font-size: 36px;
+}
+
+.pumpkin:hover,
+.skull:hover,
+.frankenstein:hover {
+  transform: scale(1.2);
 }
