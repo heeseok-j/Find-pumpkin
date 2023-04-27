@@ -95,6 +95,7 @@ function finishGame(lose) {
   showPopUp();
   clearInterval(timer);
   showPopUpText(lose ? "YOU LOSE!" : "YOU WIN!");
+  started = true;
 }
 
 // show timer
