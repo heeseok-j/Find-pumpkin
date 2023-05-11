@@ -39,7 +39,11 @@ button {
   transition: transform 150ms ease-in;
 }
 
-.pause_and_stop {
+.start_button.hide {
+  display: none;
+}
+
+.pause_and_stop_hide {
   display: none;
 }
 
@@ -84,6 +88,9 @@ button {
   margin: auto;
   transform: translateY(-125%);
   border-radius: 30px;
+}
+
+.pop-up-hide {
   display: none;
 }
 

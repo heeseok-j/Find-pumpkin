@@ -6,7 +6,7 @@ const fieldRect = field.getBoundingClientRect();
 const startBtn = document.querySelector(".start_button");
 const pauseBtn = document.querySelector(".pause_button");
 const stopBtn = document.querySelector(".stop_button");
-const pauseAndstopBtn = document.querySelector(".pause_and_stop");
+const pauseAndstopBtn = document.querySelector(".pause_and_stop_hide");
 const gameScore = document.querySelector(".game_score");
 const gameTimer = document.querySelector(".game_timer");
 const pauseIcon = document.querySelector(".fa-pause");
@@ -34,27 +34,26 @@ function startGame() {
   started = false;
   initGame();
   showPauseAndStopBtn();
-  showTimer();
+  showTimerAndScore();
   remainingTimeSec();
-  showScore();
 }
 
 // Show pause and stop icon
 function showPauseAndStopBtn() {
-  startBtn.style.display = "none";
-  pauseAndstopBtn.style.display = "block";
+  startBtn.classList.add("hide");
+  pauseAndstopBtn.classList.remove("pause_and_stop_hide");
 }
 
 // pause and restart button
 pauseBtn.addEventListener("click", () => {
   if (started) {
-    showPauseBtn();
     started = false;
+    showPauseBtn();
     remainingTimeSec();
   } else {
-    clearInterval(timer);
-    showPlayBtn();
     started = true;
+    showPlayBtn();
+    clearInterval(timer);
   }
 });
 
@@ -71,9 +70,8 @@ function showPauseBtn() {
 
 // game finish button
 stopBtn.addEventListener("click", () => {
-  pauseAndstopBtn.style.visibility = "hidden";
   finishGame();
-  showPopUpText("REPLAY?");
+  showPopUpAndText("REPLAY?");
 });
 
 // game replay button
@@ -91,20 +89,15 @@ popUpRefresh.addEventListener("click", () => {
 
 // finish game
 function finishGame(lose) {
-  pauseAndstopBtn.style.visibility = "hidden";
-  showPopUp();
-  clearInterval(timer);
-  showPopUpText(lose ? "YOU LOSE!" : "YOU WIN!");
   started = true;
+  clearInterval(timer);
+  showPopUpAndText(lose ? "YOU LOSE!" : "YOU WIN!");
+  pauseAndstopBtn.style.visibility = "hidden";
 }
 
-// show timer
-function showTimer() {
+// show timer & socre
+function showTimerAndScore() {
   gameTimer.style.visibility = "visible";
-}
-
-// show score
-function showScore() {
   gameScore.style.visibility = "visible";
 }
 
@@ -132,17 +125,13 @@ function updateTimerText(time) {
 
 // hide popup function
 function hidePopUp() {
-  popUp.style.display = "none";
+  popUp.classList.add("pop-up-hide");
 }
 
-// show popup function
-function showPopUp() {
-  popUp.style.display = "block";
-}
-
-// show popup text function
-function showPopUpText(text) {
+// show popup and text function
+function showPopUpAndText(text) {
   popUpMessage.innerText = text;
+  popUp.classList.remove("pop-up-hide");
 }
 
 // random number
@@ -188,7 +177,6 @@ function addItem(className, count, imgPath) {
 function initGame() {
   score = 0;
   field.innerHTML = "";
-
   gameScore.innerText = PUMPKIN_COUNT;
   addItem("pumpkin", PUMPKIN_COUNT, "img/pumpkin.png");
   addItem("skull", SKULL_COUNT, "img/skull.png");
@@ -211,8 +199,7 @@ function onFieldClick(event) {
       finishGame();
     }
   } else if (target.matches(".skull") || target.matches(".frankenstein")) {
-    finishGame();
-    showPopUpText("YOU LOSE!");
+    finishGame(true);
   }
 }
 
