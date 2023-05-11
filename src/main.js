@@ -1,5 +1,7 @@
 "use strict";
 
+import popUp from "./popup.js";
+
 const field = document.querySelector(".game_field");
 const fieldRect = field.getBoundingClientRect();
 
@@ -10,10 +12,6 @@ const pauseAndstopBtn = document.querySelector(".pause_and_stop_hide");
 const gameScore = document.querySelector(".game_score");
 const gameTimer = document.querySelector(".game_timer");
 const pauseIcon = document.querySelector(".fa-pause");
-
-const popUp = document.querySelector(".pop_up");
-const popUpMessage = document.querySelector(".pop_up_message");
-const popUpRefresh = document.querySelector(".pop_up_refresh");
 
 const imageSize = 60;
 const PUMPKIN_COUNT = 5;
@@ -38,10 +36,32 @@ function startGame() {
   remainingTimeSec();
 }
 
-// Show pause and stop icon
-function showPauseAndStopBtn() {
-  startBtn.classList.add("hide");
-  pauseAndstopBtn.classList.remove("pause_and_stop_hide");
+function remainingTimeSec() {
+  if (!started) {
+    updateTimerText(startTime);
+    timer = setInterval(() => {
+      updateTimerText(--startTime);
+      if (startTime <= 0) {
+        clearInterval(timer);
+        // call finish game
+        finishGame();
+        replayPopup.showText("YOU LOSE!");
+        return;
+      }
+    }, 1000);
+  }
+}
+
+function updateTimerText(time) {
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+  gameTimer.innerText = `${minutes} : ${seconds}`;
+}
+
+// show timer & socre
+function showTimerAndScore() {
+  gameTimer.style.visibility = "visible";
+  gameScore.style.visibility = "visible";
 }
 
 // pause and restart button
@@ -57,6 +77,12 @@ pauseBtn.addEventListener("click", () => {
   }
 });
 
+// Show pause and stop icon
+function showPauseAndStopBtn() {
+  startBtn.classList.add("hide");
+  pauseAndstopBtn.classList.remove("pause_and_stop_hide");
+}
+
 // show play button and pause button
 function showPlayBtn() {
   pauseIcon.classList.remove("fa-pause");
@@ -71,67 +97,15 @@ function showPauseBtn() {
 // game finish button
 stopBtn.addEventListener("click", () => {
   finishGame();
-  showPopUpAndText("REPLAY?");
-});
-
-// game replay button
-popUpRefresh.addEventListener("click", () => {
-  // time initialization
-  startTime = 5;
-  // call game
-  startGame();
-  // call hide popup
-  hidePopUp();
-  // pause and stop button visible
-  pauseAndstopBtn.style.visibility = "visible";
-  showPauseBtn();
+  replayPopup.showText("REPLAY?");
 });
 
 // finish game
 function finishGame(lose) {
-  started = true;
-  clearInterval(timer);
-  showPopUpAndText(lose ? "YOU LOSE!" : "YOU WIN!");
   pauseAndstopBtn.style.visibility = "hidden";
-}
-
-// show timer & socre
-function showTimerAndScore() {
-  gameTimer.style.visibility = "visible";
-  gameScore.style.visibility = "visible";
-}
-
-function remainingTimeSec() {
-  if (!started) {
-    updateTimerText(startTime);
-    timer = setInterval(() => {
-      updateTimerText(--startTime);
-      if (startTime <= 0) {
-        clearInterval(timer);
-        // call finish game
-        finishGame();
-        showPopUpText("YOU LOSE!");
-        return;
-      }
-    }, 1000);
-  }
-}
-
-function updateTimerText(time) {
-  const minutes = Math.floor(time / 60);
-  const seconds = time % 60;
-  gameTimer.innerText = `${minutes} : ${seconds}`;
-}
-
-// hide popup function
-function hidePopUp() {
-  popUp.classList.add("pop-up-hide");
-}
-
-// show popup and text function
-function showPopUpAndText(text) {
-  popUpMessage.innerText = text;
-  popUp.classList.remove("pop-up-hide");
+  clearInterval(timer);
+  replayPopup.showText(lose ? "YOU LOSE!" : "YOU WIN!");
+  started = true;
 }
 
 // random number
@@ -177,6 +151,7 @@ function addItem(className, count, imgPath) {
 function initGame() {
   score = 0;
   field.innerHTML = "";
+
   gameScore.innerText = PUMPKIN_COUNT;
   addItem("pumpkin", PUMPKIN_COUNT, "img/pumpkin.png");
   addItem("skull", SKULL_COUNT, "img/skull.png");
@@ -206,3 +181,14 @@ function onFieldClick(event) {
 function updateScoreText() {
   gameScore.innerText = PUMPKIN_COUNT - score;
 }
+
+const replayPopup = new popUp();
+replayPopup.userClickListener(() => {
+  // time initialization
+  startTime = 5;
+  // call game
+  startGame();
+  // pause and stop button visible
+  pauseAndstopBtn.style.visibility = "visible";
+  showPauseBtn();
+});
